@@ -1,3 +1,4 @@
+import streamlit as st
 import argparse
 import pandas as pd
 import time
@@ -14,32 +15,32 @@ from pickle import dump
 import pickle
 
 
-if __name__ == "__main__":
+@st.cache
+def load_data:
+    DATA_URL = "https://getaround-deployment.s3.eu-west-3.amazonaws.com/get_around_pricing_project.csv"
+    pricing=pd.read_csv(DATA_URL)
+    pricing=pricing.iloc[: , 1:]
+    return pricing
 
-    # Set your experiment name
-    EXPERIMENT_NAME = "getaround Pricing v5"
+def main():
+    # Title
+    st.title("Model Experimentation with MLflow")
 
-    # Set tracking URI to your Heroku application
-    mlflow.set_tracking_uri("https://my-getaround-mlflow-rodelin-610c1fba4675.herokuapp.com/")
+    # Mlflow tracking
+    track_with_mlflow = st.checkbox("Track with mlflow?")
 
-    # Set experiment's info 
-    mlflow.set_experiment(EXPERIMENT_NAME)
+    # Model training
+    start_training = st.button("Start training")
+    if not start_training:
+        st.stop()
 
-    # Get our experiment info
-    experiment = mlflow.get_experiment_by_name(EXPERIMENT_NAME)
+    if track_with_mlflow:
+        mlflow.set_experiment(data_choice)
+        mlflow.start_run()
+        mlflow.log_param('model', model_choice)
+        mlflow.log_param('features', feature_choice)
 
-    # Time execution
-    start_time = time.time()
-
-    # Call mlflow autolog
-    mlflow.sklearn.autolog()
-
-    with mlflow.start_run(experiment_id=experiment.experiment_id):
-
-        # Import dataset
-        DATA_URL = "https://getaround-deployment.s3.eu-west-3.amazonaws.com/get_around_pricing_project.csv"
-        pricing=pd.read_csv(DATA_URL)
-        pricing=pricing.iloc[: , 1:]
+   
 
         # Separate target variable y from features X
         target_name = "rental_price_per_day"
@@ -70,9 +71,8 @@ if __name__ == "__main__":
         
         model = Pipeline(steps=[("Preprocessing", preprocessor),
                                 ("Regressor", regressor)])
-        
 
-        # Log experiment to MLFlow
+       # Log experiment to MLFlow
         with mlflow.start_run(experiment_id = experiment.experiment_id):
                 model.fit(X_train, y_train)
                 predictions = model.predict(X_train)
@@ -85,6 +85,17 @@ if __name__ == "__main__":
             registered_model_name="Linear_Regression",
             signature=infer_signature(X_train, predictions)
         )
+
+        if track_with_mlflow:
+        mlflow.log_metric(metric_name+"_train", metric_train)
+        mlflow.log_metric(metric_name+"_test", metric_test)
+        mlflow.end_run()
+
+        
+
+
+
+       
 
 
         
