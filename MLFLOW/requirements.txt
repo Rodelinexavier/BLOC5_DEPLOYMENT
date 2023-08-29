@@ -1,0 +1,7 @@
+boto3
+pandas 
+gunicorn 
+scikit-learn
+mlflow
+feature-engine
+psycopg2-binary
