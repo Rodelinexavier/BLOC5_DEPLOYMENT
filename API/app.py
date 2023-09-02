@@ -1,80 +1,67 @@
 import uvicorn
-import mlflow 
-import uvicorn
 import pandas as pd 
-from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI
+from typing import  Union
+from joblib import load
 
 
+pricing = pd.read_csv("https://getaround-deployment.s3.eu-west-3.amazonaws.com/get_around_pricing_project.csv")
+#Load model and preprocessor
+loaded_model = load('model_reg.joblib')
+preprocessor = load('preprocessor.joblib')
 
-mlflow.set_tracking_uri("https://getaround-mlflow-projet-5c161c389b6d.herokuapp.com/")
-
-description = """ 
-
-This is our Getaround Predictor.
-You can use it to predict the price of your car rental.
-
-#Endpoints
-
-* You must use '/'  'get' to have the page result.
-* You must use '/predict' for a post request of the machine learning model.
-"""
 
 app = FastAPI(
     title="Car Rental price API",
-    description=description,
-    version="0.1"
+    description="""
+    This is our Getaround Predictor.
+    You can use it to predict the price of your car rental.
+
+    #Endpoints
+
+    * You must use '/'  'get' to have the page result.
+    * You must use '/predict' for a post request of the machine learning model.
+    """
 )
+@app.get("/")
+async def root():
+    message = """ Welcome to the Getaround API"""
+    return message
 
 
 class PredictionFeatures(BaseModel):
-    model_key: str = "Peugeat"
-    mileage: int = 5000
-    engine_power: int = 150
-    fuel: str = "diesel"
-    paint_color: str = "red"
-    car_type: str = "coupe"
-    private_parking_available: bool = True
-    has_gps: bool = False
-    has_air_conditioning: bool = True
-    automatic_car: bool = True
-    has_getaround_connect: bool = False
-    has_speed_regulator: bool = True
-    winter_tires: bool = False
+    model_key: str 
+    mileage: Union[int, float]
+    engine_power: Union[int, float]
+    fuel: str 
+    paint_color: str 
+    car_type: str 
+    private_parking_available: bool 
+    has_gps: bool 
+    has_air_conditioning: bool 
+    automatic_car: bool 
+    has_getaround_connect: bool 
+    has_speed_regulator: bool 
+    winter_tires: bool 
 
 
-@app.get("/", tags=["Endpoints"])
-async def index():
-
-    message = "Welcome to the getaound API"
-
-    return message
 
 @app.post("/predict", tags=["Machine Learning"])
-async def predict(predictionFeatures: PredictionFeatures):
+def predict(predictionsFeatures:PredictionFeatures):
+    
+    features = dict(predictionsFeatures)
+    data = pd.DataFrame(columns=['model_key', 'mileage', 'engine_power', 'fuel', 'paint_color','car_type', 'private_parking_available', 'has_gps',
+    'has_air_conditioning', 'automatic_car', 'has_getaround_connect','has_speed_regulator', 'winter_tires'])
+    data.loc[0] = list(features.values())
 
-    # Read data 
-    df_vehicle = pd.DataFrame(dict(predictionFeatures), index=[0])
+    input_pred = preprocessor.transform(data)
+    pred = loaded_model.predict(input_pred)
+    return {"prediction" : pred[0]}
 
-    # Log model from mlflow 
-    logged_model = 'runs:/45a2b3b50dc046aebdb46107115f17e1/getaround_prediction'
-    # Load model as a PyFuncModel.
-    loaded_model = mlflow.pyfunc.load_model(logged_model)
-
-    # Predict on a Pandas DataFrame.
-    import pandas as pd
-    loaded_model.predict(pd.DataFrame(df_vehicle))
-    prediction = loaded_model.predict(df_vehicle)
-
-
-    # Format response
-    response = {"prediction": prediction.tolist()[0]}
-    return response
-
-if __name__=="__main__":
-    uvicorn.run(app, host="0.0.0.0", port=4000)
+    
+if __name__ == "__app__":
+    uvicorn.run(app, host = "0.0.0.0", port = 4000, debug=True, reload=True)  
 
     
     
