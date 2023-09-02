@@ -52,8 +52,8 @@ def predict(predictionsFeatures:PredictionFeatures):
     
     features = dict(predictionsFeatures)
     data = pd.DataFrame(columns=['model_key', 'mileage', 'engine_power', 'fuel', 'paint_color','car_type', 'private_parking_available', 'has_gps',
-    'has_air_conditioning', 'automatic_car', 'has_getaround_connect','has_speed_regulator', 'winter_tires'])
-    data.loc[0] = list(features.values())
+    'has_air_conditioning', 'automatic_car', 'has_getaround_connect','has_speed_regulator', 'winter_tires'])[0]
+   
 
     input_pred = preprocessor.transform(data)
     pred = loaded_model.predict(input_pred)
