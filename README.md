@@ -12,12 +12,16 @@ In addition to the above question, the Data Science team is working on pricing o
 
 
 MLFLOW : https://dagshub.com/Rodelinexavier/MLFLOW_TRACKING.mlflow
+
+
 Source: https://dagshub.com/docs/feature_guide/experiment_tracking/
 
 API : https://getaround-api.onrender.com/
+
 Source : https://youtu.be/JiA-8oVgPIM?si=AP2EOVfFPfGpMv2l
 
 DASHBOARD : https://projet5jedha-getaround-dashboard.streamlit.app/
+
 Source: https://docs.streamlit.io/streamlit-community-cloud/get-started/quickstart
 
 
