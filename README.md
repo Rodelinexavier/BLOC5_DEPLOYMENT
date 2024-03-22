@@ -25,4 +25,3 @@ DASHBOARD : https://projet5jedha-getaround-dashboard.streamlit.app/
 Source: https://docs.streamlit.io/streamlit-community-cloud/get-started/quickstart
 
 
-Lien video : https://share.vidyard.com/watch/LjoB2ufC1kZRD31aiSrNUG?
